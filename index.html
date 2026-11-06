@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Розклад занять · аспіранти І курсу · УДХТУ 2026/2027</title>
+  <meta name="description" content="Інтерактивний розклад занять аспірантів першого курсу ННІ УДХТУ на І семестр 2026/2027: виберіть спеціальність та додайте заняття у Google Календар, Outlook або iCal.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="stylesheet" href="assets/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230f2f5e'/><text x='50' y='68' font-size='46' font-family='system-ui' font-weight='700' fill='%23f2b705' text-anchor='middle'>У</text></svg>">
+</head>
+<body>
+  <a class="skip" href="#result">Перейти до розкладу</a>
+
+  <header class="topbar">
+    <div class="topbar__inner">
+      <div class="brand">
+        <span class="brand__logos">
+          <span class="brand__logo">
+            <img src="assets/logo-udhtu.png" alt="УДХТУ" width="160" height="160"
+                 title="Український державний хіміко-технологічний університет">
+          </span>
+          <span class="brand__logo">
+            <img src="assets/logo-udunt.png" alt="УДУНТ" width="160" height="160"
+                 title="Український державний університет науки і технологій">
+          </span>
+        </span>
+        <span class="brand__text">
+          <strong>Розклад занять</strong>
+          <small>аспіранти І курсу · І семестр 2026/2027</small>
+        </span>
+      </div>
+      <div class="topbar__meta">
+        <span class="pill">05.10 — 27.12.2026</span>
+        <a class="pill pill--muted" href="https://udhtu.edu.ua/" target="_blank" rel="noopener">ННІ УДХТУ</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero__glow" aria-hidden="true"></div>
+      <div class="hero__inner">
+        <div class="hero__copy">
+          <p class="eyebrow">Інтерактивний розклад</p>
+          <h1>Ваші заняття —<br>за спеціальністю</h1>
+          <p class="lede">
+            Введіть код спеціальності з шапки розкладу (наприклад <code>G3</code>), щоб побачити свої пари,
+            викладачів і періодичність. Кожне заняття можна додати в Google Календар,
+            Outlook або iCal одним натисканням.
+          </p>
+        </div>
+
+        <form class="picker" id="picker" autocomplete="off">
+          <label class="picker__label" for="groupInput">Код спеціальності</label>
+          <div class="picker__row">
+            <input
+              id="groupInput"
+              name="group"
+              type="text"
+              list="groupList"
+              placeholder="G3"
+              spellcheck="false"
+              inputmode="text"
+              aria-describedby="pickerHint">
+            <button class="btn btn--primary" type="submit">
+              Показати розклад
+            </button>
+          </div>
+          <datalist id="groupList"></datalist>
+          <p class="picker__hint" id="pickerHint" aria-live="polite"></p>
+          <div class="chips" id="groupChips" role="group" aria-label="Доступні спеціальності"></div>
+          <p class="picker__note">
+            Назви спеціальностей — за
+            <a href="https://zakon.rada.gov.ua/laws/show/1021-2024-%D0%BF#Text" target="_blank" rel="noopener">переліком КМУ № 1021 від 30.08.2024</a>.
+          </p>
+        </form>
+      </div>
+    </section>
+
+    <section class="result" id="result" hidden aria-live="polite">
+      <div class="summary" id="summary"></div>
+
+      <div class="result__bar">
+        <h2 id="weekTitle">Розклад на поточний тиждень</h2>
+        <button class="btn btn--ghost" type="button" id="allIcs">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+          Увесь розклад у .ics
+        </button>
+      </div>
+
+      <div id="weekView" class="view view--week"></div>
+      <div id="agendaView" class="view view--agenda"></div>
+
+      <aside class="legend">
+        <h3>Як читати позначки</h3>
+        <ul>
+          <li><span class="badge is-lecture">Лекція</span> дистанційно, в Zoom</li>
+          <li><span class="badge is-practical">Практичні</span> робота з викладачем</li>
+          <li><span class="badge is-seminar">Семінар</span> обговорення, доповіді</li>
+          <li><span class="badge is-lab">Лабораторні</span> практикум</li>
+          <li><span class="badge badge--ghost is-weekly">Щотижня</span> заняття кожного тижня</li>
+          <li><span class="badge badge--ghost is-odd">Чисельник</span> лише парні тижні семестру</li>
+          <li><span class="badge badge--ghost is-even">Знаменник</span> лише непарні тижні семестру</li>
+        </ul>
+        <p>
+          Заняття починаються <strong>05.10.2026</strong> — це тиждень-знаменник.
+          Далі тижні чергуються: знаменник, чисельник, знаменник…
+        </p>
+      </aside>
+
+      <footer class="source">
+        <p>
+          <a href="source/%D0%A0%D0%BE%D0%B7%D0%BA%D0%BB%D0%B0%D0%B4_%D0%B7%D0%B0%D0%BD%D1%8F%D1%82%D1%8C_1_%D1%81%D0%B5%D0%BC%D0%B5%D1%81%D1%82%D1%80_2026_2027_%D0%A3%D0%94%D0%A5%D0%A2%D0%A3.pdf" target="_blank" rel="noopener">Джерело</a>: «Розклад занять аспірантів першого курсу денної форми навчання
+          на І семестр 2026-2027 навчального року», затверджено 29.09.2026,
+          ННІ УДХТУ. Це неофіційна інтерактивна копія — у разі розбіжностей
+          орієнтуйтеся на документ відділу аспірантури та докторантури.
+        </p>
+        <p class="source__author">
+          Автор: Аспірант 1 курсу спеціальності «Комп’ютерні науки» Марченко М.В.
+        </p>
+      </footer>
+    </section>
+
+    <section class="empty" id="empty">
+      <h2>Оберіть свою спеціальність</h2>
+      <p>
+        Коди спеціальностей — у шапці розкладу: <strong>A7, F3, C1, G1, G8, G11, E3, G3, Н1</strong>.
+        Якщо ви другокурсник напряму «Агрономія», оберіть «Н1 · ІІ курс».
+      </p>
+    </section>
+  </main>
+
+  <div class="modal" id="modal" hidden aria-hidden="true">
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal__close" type="button" data-close aria-label="Закрити">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <div class="modal__body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script src="assets/data.js"></script>
+  <script src="assets/dates.js"></script>
+  <script src="assets/calendar.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
