@@ -120,7 +120,8 @@ centralised in `assets/data.js` so they are easy to correct.
   starts with `* Outlook-посилання додає найближче заняття…` — the asterisk pair marks
   the Outlook one-meeting limitation without repeating it inline.
 - «ННІ УДХТУ» in the header links to <https://udhtu.edu.ua/>; the footer contains the
-  source link and the author credit.
+  source link and the author credit. It lives outside `#result`, so it is visible on
+  the empty state too, before any specialty is selected.
 
 ## Calendar integration
 
@@ -131,17 +132,26 @@ All three exports are generated in the browser; nothing is uploaded anywhere.
   lab classes) for the exact number of meetings.
 - **Outlook** — an `outlook.live.com/calendar/0/deeplink/compose` link. Outlook deeplinks do
   not support recurrence, so this button adds **the next meeting only**. The modal says so.
-- **iCal / .ics** — a generated RFC 5545 file with **one `VEVENT` per meeting**, UTC
-  timestamps (correct CET/EET transition on 25.10.2026), a 15-minute `VALARM` reminder, the
-  teacher, the class type, the Zoom/Classroom link and the date range. Works with Apple
-  Calendar, Outlook and Google Calendar.
+- **iCal / .ics** — a generated RFC 5545 file with **one recurring `VEVENT` per class cycle**
+  (`RRULE:FREQ=WEEKLY`, `INTERVAL=2` for the biweekly lab, `COUNT` = number of meetings),
+  a `VTIMEZONE` block for `Europe/Kyiv` and `DTSTART;TZID` local times, so a series that
+  crosses the 25.10.2026 DST switch keeps its wall-clock slot. Each event carries the
+  teacher, the class type, the date range, the Zoom/Classroom link, a 15-minute `VALARM`,
+  and **both** a plain `DESCRIPTION` and an HTML `X-ALT-DESC` — Outlook renders the HTML
+  body, and some clients ignore the plain-text one.
 
-The class-level `.ics` contains the whole cycle; selecting a single date chip in the modal
-exports just that meeting. «Увесь розклад у .ics» exports every class of the selected specialty.
+Why a series instead of one `VEVENT` per date: exporting every meeting separately made
+Outlook fold same-named events into one series on import and keep the description only on
+the current week's occurrence; later occurrences showed just the title and the Zoom link.
+A real `RRULE` master has a single body that every occurrence inherits.
 
-To keep the URL and the file small, times are computed from the lesson's `start`/`end` plus
-a Kyiv DST helper in `assets/calendar.js` (`kyivOffset`), rather than from a timezone
-database.
+The class-level `.ics` contains the whole cycle as a series; selecting a single date chip in
+the modal exports a one-off `VEVENT` for that meeting. «Увесь розклад у .ics» exports one
+series per class of the selected specialty.
+
+Times are computed from the lesson's `start`/`end` plus a Kyiv DST helper in
+`assets/calendar.js` (`kyivOffset`), rather than from a timezone database; the `.ics` writer
+emits the matching `VTIMEZONE` rules.
 
 ## Files
 
@@ -213,3 +223,6 @@ presentation and date arithmetic.
 - Browser checks: `G3`, `Н1 · І курс`, `Н1 · ІІ курс`, an invalid code, hash routing,
   keyboard-opened modal, date chips, Google/Outlook URLs, `.ics` download and unfolding,
   desktop grid, mobile agenda, dark mode and print styles.
+- The `.ics` builder is validated with `ical.js`: every cycle is one series with the exact
+  `COUNT`, expansions reproduce the same dates, local times stay fixed across the DST
+  switch, and every `VEVENT` has both `DESCRIPTION` and `X-ALT-DESC`.

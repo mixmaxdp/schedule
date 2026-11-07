@@ -61,6 +61,49 @@
     return lesson.subject + ' (' + lesson.subtitle.toLowerCase() + ')';
   }
 
+  /* Outlook зливає однотипні події в серію і губить опис у наступних
+     повтореннях. Тому весь цикл занять експортуємо однією серією з RRULE,
+     а не окремими VEVENT на кожну дату. */
+  function weeklyStep(dates) {
+    if (dates.length < 2) return 0;
+    var step = Math.round((D.parseISO(dates[1]) - D.parseISO(dates[0])) / 86400000);
+    if (step !== 7 && step !== 14) return 0;
+    for (var i = 2; i < dates.length; i += 1) {
+      var next = Math.round((D.parseISO(dates[i]) - D.parseISO(dates[i - 1])) / 86400000);
+      if (next !== step) return 0;
+    }
+    return step;
+  }
+
+  function seriesRule(dates, step) {
+    if (dates.length < 2 || !step) return '';
+    return step === 14
+      ? 'RRULE:FREQ=WEEKLY;INTERVAL=2;COUNT=' + dates.length
+      : 'RRULE:FREQ=WEEKLY;COUNT=' + dates.length;
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  /* HTML-версія опису: Outlook показує саме X-ALT-DESC, а простий
+     DESCRIPTION у частині клієнтів ігнорує. */
+  function htmlDescription(lesson, dates) {
+    var body = lessonDescription(lesson, dates).split('\n').map(function (line) {
+      if (!line) return '<div><br></div>';
+      var link = /^([^:]+): (https?:\/\/\S+)$/.exec(line);
+      if (link) {
+        return '<div>' + escapeHtml(link[1]) + ': <a href="' + escapeHtml(link[2]) + '">' +
+          escapeHtml(link[2]) + '</a></div>';
+      }
+      return '<div>' + escapeHtml(line) + '</div>';
+    }).join('');
+    return '<html><body>' + body + '</body></html>';
+  }
+
   function lessonDescription(lesson, dates) {
     var lines = [
       lesson.teacher,
@@ -148,6 +191,29 @@
     return out.join('\r\n ');
   }
 
+  function timezoneBlock() {
+    return [
+      'BEGIN:VTIMEZONE',
+      'TZID:' + TIMEZONE,
+      'X-LIC-LOCATION:' + TIMEZONE,
+      'BEGIN:DAYLIGHT',
+      'TZOFFSETFROM:+0200',
+      'TZOFFSETTO:+0300',
+      'TZNAME:EEST',
+      'DTSTART:19700329T030000',
+      'RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU',
+      'END:DAYLIGHT',
+      'BEGIN:STANDARD',
+      'TZOFFSETFROM:+0300',
+      'TZOFFSETTO:+0200',
+      'TZNAME:EET',
+      'DTSTART:19701025T040000',
+      'RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU',
+      'END:STANDARD',
+      'END:VTIMEZONE'
+    ];
+  }
+
   function buildICS(events) {
     var lines = [
       'BEGIN:VCALENDAR',
@@ -159,16 +225,23 @@
       'X-WR-TIMEZONE:' + TIMEZONE
     ];
 
+    lines = lines.concat(timezoneBlock());
+
     events.forEach(function (event) {
       lines.push('BEGIN:VEVENT');
       lines.push('UID:' + event.uid);
       lines.push('DTSTAMP:' + event.stamp);
-      lines.push('DTSTART:' + toUtcStamp(event.date, event.start));
-      lines.push('DTEND:' + toUtcStamp(event.date, event.end));
+      /* TZID замість UTC — інакше серія, що перетинає перехід на зимовий
+         час 25.10, зсувається на годину в наступних повтореннях. */
+      lines.push('DTSTART;TZID=' + TIMEZONE + ':' + localStamp(event.date, event.start));
+      lines.push('DTEND;TZID=' + TIMEZONE + ':' + localStamp(event.date, event.end));
+      if (event.rrule) lines.push(event.rrule);
       lines.push('SUMMARY:' + escapeText(event.summary));
       lines.push('DESCRIPTION:' + escapeText(event.description));
+      if (event.html) lines.push('X-ALT-DESC;FMTTYPE=text/html:' + event.html);
       lines.push('LOCATION:' + escapeText(event.location));
       if (event.url) lines.push('URL:' + event.url);
+      lines.push('SEQUENCE:0');
       lines.push('STATUS:CONFIRMED');
       lines.push('TRANSP:OPAQUE');
       lines.push('BEGIN:VALARM');
@@ -183,25 +256,40 @@
     return lines.map(foldLine).join('\r\n') + '\r\n';
   }
 
-  function eventFor(lesson, dateISO, dates, stamp) {
+  function eventFor(lesson, dates, stamp) {
+    var step = weeklyStep(dates);
+    var location = lesson.links && lesson.links[0] ? lesson.links[0].url : lesson.format;
     return {
-      uid: lesson.id + '-' + dateISO + '@udhtu-schedule',
+      /* Один UID на цикл, щоб повторний імпорт оновлював серію, а не плодив копії. */
+      uid: lesson.id + (dates.length > 1 ? '-series' : '-' + dates[0]) + '@udhtu-schedule',
       stamp: stamp,
-      date: dateISO,
+      date: dates[0],
       start: lesson.start,
       end: lesson.end,
       summary: lessonTitle(lesson),
       description: lessonDescription(lesson, dates),
-      location: lesson.links && lesson.links[0] ? lesson.links[0].url : lesson.format,
-      url: lesson.links && lesson.links[0] ? lesson.links[0].url : ''
+      html: htmlDescription(lesson, dates),
+      location: location,
+      url: lesson.links && lesson.links[0] ? lesson.links[0].url : '',
+      rrule: seriesRule(dates, step)
     };
+  }
+
+  function eventsFor(lesson, dates, stamp, target) {
+    var step = weeklyStep(dates);
+    if (dates.length > 1 && !step) {
+      dates.forEach(function (dateISO) {
+        target.push(eventFor(lesson, [dateISO], stamp));
+      });
+      return;
+    }
+    target.push(eventFor(lesson, dates, stamp));
   }
 
   function lessonICS(lesson, dates) {
     var stamp = toUtcStamp(D.todayISO(), '12:00');
-    var events = dates.map(function (dateISO) {
-      return eventFor(lesson, dateISO, dates, stamp);
-    });
+    var events = [];
+    eventsFor(lesson, dates, stamp, events);
     return buildICS(events);
   }
 
@@ -209,9 +297,9 @@
     var stamp = toUtcStamp(D.todayISO(), '12:00');
     var events = [];
     entries.forEach(function (entry) {
-      entry.dates.forEach(function (dateISO) {
-        events.push(eventFor(entry.lesson, dateISO, entry.dates, stamp));
-      });
+      if (entry.dates.length) {
+        eventsFor(entry.lesson, entry.dates, stamp, events);
+      }
     });
     events.sort(function (a, b) {
       return (a.date + a.start) < (b.date + b.start) ? -1 : 1;

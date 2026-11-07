@@ -46,6 +46,7 @@
     savchenko: 'https://udhtu-ukr-education.zoom.us/j/6829011997?pwd=cVdEa3NQZ09Tc3Z1TmxTZU96WEpUdz09',
     velichenko: 'https://udhtu-ukr-education.zoom.us/j/85280203453?pwd=G0H1BX8n96ZPoRTRd8jQxu9hauyqkq.1',
     gnatush: 'https://ust-edu-ua.zoom.us/j/82194047481?pwd=WkNXNzAxTEFMazg4V1NyazdOMDhhQT09',
+    dmitriieva: 'https://ust-edu-ua.zoom.us/j/82760651775?pwd=X0qAETJnt8yAsmu7hI9sOilQhtoni2.1',
     classroom: 'https://classroom.google.com/c/MTc5NTI4Njk1OTM1?cjc=k3np5m7',
     chychkov: 'https://us04web.zoom.us/j/8244151817?pwd=Mh1YT6xWDXVAtVNIwFt9H4mKDae9QL.1',
     khmil: 'https://ust-edu-ua.zoom.us/j/5409077331?pwd=Y0s1ZmpXY2lhendqbjdaK280TmQwdz09',
@@ -154,15 +155,16 @@
       subtitle: 'Лабораторні · 2 години',
       type: 'lab',
       hours: 2,
-      teacher: 'Гнатушенко Вікторія Володимирівна',
-      teacherInfo: 'д. т. н., професор, завідувач кафедри інформаційних технологій і систем ННІ ДМетІ',
+      teacher: 'Дмитрієва Ірина Сергіївна',
+      teacherInfo: 'доцент кафедри інформаційних технологій і систем ННІ ДМетІ',
       groups: ['F3', 'C1', 'G1', 'G8', 'G11', 'E3', 'G3'],
       from: '2026-10-05',
       to: '2026-12-27',
       parity: WEEK_DEN,
       format: 'Онлайн',
-      note: 'Лише знаменник (через тиждень). Перший тиждень семестру — знаменник.',
-      links: [{ label: 'Zoom', url: ZOOM.gnatush }]
+      note: 'Лише знаменник (через тиждень). Перший тиждень семестру — знаменник. ' +
+        'Zoom: ідентифікатор 827 6065 1775, код доступу 537359.',
+      links: [{ label: 'Zoom', url: ZOOM.dmitriieva }]
     },
     {
       id: 'phil-seminar-a',
