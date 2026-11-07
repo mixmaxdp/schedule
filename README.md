@@ -103,8 +103,18 @@ centralised in `assets/data.js` so they are easy to correct.
 
 ## Interface notes
 
-- The heading above the schedule is generated from the current local date:
-  «Розклад на поточний тиждень `dd.mm.yy-dd.mm.yy`» (Monday–Sunday).
+- The schedule always opens on the current week, and the heading follows the local
+  date: «Розклад на поточний тиждень `dd.mm.yy-dd.mm.yy`» (Monday–Sunday). On any
+  other week it reads «Розклад на тиждень `dd.mm.yy-dd.mm.yy`».
+- A week switcher (`‹` / `Сьогодні` / `›`) walks through the semester weeks. The
+  semester is sliced into Monday-based weeks from `SEMESTER.start` to `SEMESTER.end`
+  (12 weeks for 2026/2027 autumn), the arrows are disabled at the first and last week,
+  and «Сьогодні» returns to the current week and disables itself there. A meta line
+  under the heading shows «Тиждень N із 12 · чисельник/знаменник».
+- Only lessons that actually take place in the selected week are rendered: biweekly
+  parity (`чис.`/`знам.`) and each lesson's `from`/`to` range are respected. Weeks
+  without classes show «Цього тижня занять немає.». The summary statistics and the
+  «Увесь розклад у .ics» export always cover the whole semester.
 - Weekday columns and mobile agenda headings show the date next to the day name
   (`Понеділок 02.11`), so the current week is readable without opening the modal.
 - Grid cards show the full class type (`Лекція`, `Практичні`, `Семінар`,
@@ -223,6 +233,11 @@ presentation and date arithmetic.
 - Browser checks: `G3`, `Н1 · І курс`, `Н1 · ІІ курс`, an invalid code, hash routing,
   keyboard-opened modal, date chips, Google/Outlook URLs, `.ics` download and unfolding,
   desktop grid, mobile agenda, dark mode and print styles.
+- Week navigation is covered by a headless-browser run: first/last week bounds, all 12
+  week headings and parity labels, in-week filtering (biweekly lab, lecture ending
+  15.11, practical starting 16.11), «Сьогодні» reset, agenda on a 390 px viewport,
+  dark mode, no horizontal overflow down to 390 px, and a whole-semester `.ics` export
+  that stays unchanged while browsing weeks.
 - The `.ics` builder is validated with `ical.js`: every cycle is one series with the exact
   `COUNT`, expansions reproduce the same dates, local times stay fixed across the DST
   switch, and every `VEVENT` has both `DESCRIPTION` and `X-ALT-DESC`.

@@ -27,7 +27,11 @@
   var state = {
     selection: null,
     dates: new Map(),
-    modal: null
+    modal: null,
+    weeks: null,
+    weekIndex: 0,
+    todayIndex: 0,
+    lessons: null
   };
 
   var el = {};
@@ -567,21 +571,89 @@
     renderResult(selection, shouldScroll !== false);
   }
 
-  function renderResult(selection, shouldScroll) {
-    var lessons = lessonsFor(selection);
-    var week = D.currentWeek();
-    el.result.hidden = false;
+  /* ---------- тижні семестру ---------- */
 
-    el.weekTitle.textContent = 'Розклад на поточний тиждень ' +
-      D.formatShortDate(week.start) + '-' + D.formatShortDate(week.end);
+  function semesterWeeks() {
+    var first = D.parseISO(D.startOfWeekISO(S.SEMESTER.start));
+    var last = D.parseISO(D.startOfWeekISO(S.SEMESTER.end));
+    var weeks = [];
+    for (var ms = first; ms <= last; ms = D.addDays(ms, 7)) {
+      weeks.push(D.weekOf(D.toISO(ms)));
+    }
+    return weeks;
+  }
 
-    renderSummary(selection, lessons);
+  function todayWeekIndex(weeks) {
+    var today = D.startOfWeekISO(D.todayISO());
+    if (today <= weeks[0].start) return 0;
+    if (today >= weeks[weeks.length - 1].start) return weeks.length - 1;
+    for (var i = 0; i < weeks.length; i += 1) {
+      if (weeks[i].start === today) return i;
+    }
+    return 0;
+  }
+
+  /* У тижні показуємо лише заняття, які справді відбуваються:
+     чисельник/знаменник і пізніший початок дисципліни враховуються. */
+  function lessonsInWeek(lessons, week) {
+    return lessons.filter(function (lesson) {
+      var date = week.days[lesson.day];
+      return !!date && datesFor(lesson).indexOf(date) !== -1;
+    });
+  }
+
+  function weekRange(week) {
+    return D.formatShortDate(week.start) + '-' + D.formatShortDate(week.end);
+  }
+
+  function renderWeekParts(lessons) {
+    var week = state.weeks[state.weekIndex];
+    var inWeek = lessonsInWeek(lessons, week);
+    var isCurrent = week.start === D.startOfWeekISO(D.todayISO());
+    var parity = D.parityOf(D.parseISO(week.start), S.SEMESTER);
+
+    el.weekTitle.textContent = (isCurrent
+      ? 'Розклад на поточний тиждень '
+      : 'Розклад на тиждень ') + weekRange(week);
+
+    el.weekMeta.textContent = 'Тиждень ' + (state.weekIndex + 1) + ' із ' +
+      state.weeks.length + ' · ' + (parity === 'numerator' ? 'чисельник' : 'знаменник');
+
+    el.prevWeek.disabled = state.weekIndex === 0;
+    el.nextWeek.disabled = state.weekIndex === state.weeks.length - 1;
+    el.todayWeek.disabled = state.weekIndex === state.todayIndex;
 
     el.weekWrap.innerHTML = '';
-    el.weekWrap.appendChild(renderWeek(lessons, week));
+    if (inWeek.length) {
+      el.weekWrap.appendChild(renderWeek(inWeek, week));
+    } else {
+      var empty = document.createElement('p');
+      empty.className = 'week-empty';
+      empty.textContent = 'Цього тижня занять немає.';
+      el.weekWrap.appendChild(empty);
+    }
 
     el.agendaWrap.innerHTML = '';
-    el.agendaWrap.appendChild(renderAgenda(lessons, week));
+    el.agendaWrap.appendChild(renderAgenda(inWeek, week));
+  }
+
+  function setWeek(index) {
+    var next = Math.min(Math.max(index, 0), state.weeks.length - 1);
+    if (next === state.weekIndex) return;
+    state.weekIndex = next;
+    renderWeekParts(state.lessons);
+  }
+
+  function renderResult(selection, shouldScroll) {
+    var lessons = lessonsFor(selection);
+    if (!state.weeks) state.weeks = semesterWeeks();
+    state.todayIndex = todayWeekIndex(state.weeks);
+    state.weekIndex = state.todayIndex;
+    state.lessons = lessons;
+
+    el.result.hidden = false;
+    renderSummary(selection, lessons);
+    renderWeekParts(lessons);
 
     el.allIcs.onclick = function () {
       var entries = lessons.map(function (lesson) {
@@ -622,6 +694,10 @@
     el.weekWrap = document.getElementById('weekView');
     el.agendaWrap = document.getElementById('agendaView');
     el.weekTitle = document.getElementById('weekTitle');
+    el.weekMeta = document.getElementById('weekMeta');
+    el.prevWeek = document.getElementById('prevWeek');
+    el.nextWeek = document.getElementById('nextWeek');
+    el.todayWeek = document.getElementById('todayWeek');
     el.allIcs = document.getElementById('allIcs');
     el.modal = document.getElementById('modal');
     el.modalBody = document.getElementById('modalBody');
@@ -640,6 +716,16 @@
 
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape' && state.modal) closeModal();
+    });
+
+    el.prevWeek.addEventListener('click', function () {
+      setWeek(state.weekIndex - 1);
+    });
+    el.nextWeek.addEventListener('click', function () {
+      setWeek(state.weekIndex + 1);
+    });
+    el.todayWeek.addEventListener('click', function () {
+      setWeek(state.todayIndex);
     });
 
     window.addEventListener('hashchange', function () {

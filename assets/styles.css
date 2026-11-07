@@ -591,6 +591,89 @@ main {
   font-weight: 750;
 }
 
+.result__heading {
+  min-width: 0;
+}
+
+.week-meta {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.result__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.week-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.week-nav__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 11px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
+}
+
+.week-nav__btn svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.week-nav__btn:hover:not(:disabled) {
+  color: var(--ink);
+  border-color: var(--brand-2);
+}
+
+.week-nav__btn:focus-visible {
+  outline: 2px solid var(--brand-2);
+  outline-offset: 2px;
+}
+
+.week-nav__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.week-nav__today {
+  padding: 0 13px;
+}
+
+.week-empty {
+  padding: 44px 20px;
+  text-align: center;
+  color: var(--muted);
+  background: var(--surface-2);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+}
+
 /* ---------- week grid ---------- */
 
 .view--agenda {
@@ -1361,6 +1444,28 @@ main {
     gap: 10px;
   }
 
+  .result__actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .week-nav {
+    gap: 8px;
+  }
+
+  .week-nav__btn {
+    height: 42px;
+  }
+
+  .week-nav__btn:not(.week-nav__today) {
+    flex: 0 0 46px;
+  }
+
+  .week-nav__today {
+    flex: 1 1 auto;
+  }
+
   .result__bar .btn {
     width: 100%;
   }
@@ -1447,6 +1552,7 @@ main {
   .picker,
   .legend,
   .result__bar .btn,
+  .week-nav,
   .card__cta,
   .modal {
     display: none !important;

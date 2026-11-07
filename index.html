@@ -82,11 +82,27 @@
       <div class="summary" id="summary"></div>
 
       <div class="result__bar">
-        <h2 id="weekTitle">Розклад на поточний тиждень</h2>
-        <button class="btn btn--ghost" type="button" id="allIcs">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-          Увесь розклад у .ics
-        </button>
+        <div class="result__heading">
+          <h2 id="weekTitle">Розклад на поточний тиждень</h2>
+          <p class="week-meta" id="weekMeta"></p>
+        </div>
+        <div class="result__actions">
+          <div class="week-nav" role="group" aria-label="Перемикання тижнів семестру">
+            <button class="week-nav__btn" type="button" id="prevWeek" aria-label="Попередній тиждень" title="Попередній тиждень">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg>
+            </button>
+            <button class="week-nav__btn week-nav__today" type="button" id="todayWeek" title="Повернутися до поточного тижня">
+              Сьогодні
+            </button>
+            <button class="week-nav__btn" type="button" id="nextWeek" aria-label="Наступний тиждень" title="Наступний тиждень">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg>
+            </button>
+          </div>
+          <button class="btn btn--ghost" type="button" id="allIcs">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+            Увесь розклад у .ics
+          </button>
+        </div>
       </div>
 
       <div id="weekView" class="view view--week"></div>

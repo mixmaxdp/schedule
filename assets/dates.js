@@ -71,13 +71,17 @@
     return toISO(addDays(ms, -offset));
   }
 
-  function currentWeek() {
-    var start = startOfWeekISO(todayISO());
+  function weekOf(iso) {
+    var start = startOfWeekISO(iso || todayISO());
     var days = {};
     for (var i = 0; i < 7; i += 1) {
       days[i + 1] = toISO(addDays(parseISO(start), i));
     }
     return { start: start, end: days[7], days: days };
+  }
+
+  function currentWeek() {
+    return weekOf(todayISO());
   }
 
   function formatShortDate(iso) {
@@ -116,6 +120,7 @@
     occurrences: occurrences,
     todayISO: todayISO,
     startOfWeekISO: startOfWeekISO,
+    weekOf: weekOf,
     currentWeek: currentWeek,
     formatShortDate: formatShortDate,
     formatDayMonth: formatDayMonth,
