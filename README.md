@@ -93,8 +93,8 @@ centralised in `assets/data.js` so they are easy to correct.
    06.10, 20.10, 03.11, 17.11, 01.12, 15.12.
 4. **Date ranges are inclusive and weekday-aligned.** Each lesson carries `from`/`to`
    dates; occurrences are generated on the lesson's weekday inside that range, filtered by
-   parity. This is why the Methodology practical starts on 16.11 while the Methodology
-   lecture ends on 15.11.
+   parity. This is why the Methodology lecture runs through 22.11 (including the week
+   16.11–22.11) and the Methodology practical starts on 23.11.
 5. **Н1 course split** as described above. The source table has one `Н1` column covering
    both cohorts, so the split follows the parenthetical notes in the header rather than a
    separate column.
@@ -235,7 +235,7 @@ presentation and date arithmetic.
   desktop grid, mobile agenda, dark mode and print styles.
 - Week navigation is covered by a headless-browser run: first/last week bounds, all 12
   week headings and parity labels, in-week filtering (biweekly lab, lecture ending
-  15.11, practical starting 16.11), «Сьогодні» reset, agenda on a 390 px viewport,
+  22.11, practical starting 23.11), «Сьогодні» reset, agenda on a 390 px viewport,
   dark mode, no horizontal overflow down to 390 px, and a whole-semester `.ics` export
   that stays unchanged while browsing weeks.
 - The `.ics` builder is validated with `ical.js`: every cycle is one series with the exact
