@@ -424,7 +424,8 @@
     parts.push('<p class="modal__hint">' + (selectedDate
       ? 'Обрано одне заняття — кнопки нижче додадуть лише його *'
       : 'Кнопки нижче додадуть увесь цикл (' + allDates.length + ' ' +
-        plural(allDates.length, 'заняття', 'заняття', 'занять') + ') *') + '</p>');
+        plural(allDates.length, 'заняття', 'заняття', 'занять') +
+        '), або оберіть потрібну дату, щоб додати тільки її *') + '</p>');
 
     var holder = document.createElement('div');
     holder.innerHTML = parts.join('');
@@ -507,7 +508,8 @@
       hint.textContent = selected
         ? 'Обрано одне заняття — кнопки нижче додадуть лише його *'
         : 'Кнопки нижче додадуть увесь цикл (' + allDates.length + ' ' +
-          plural(allDates.length, 'заняття', 'заняття', 'занять') + ') *';
+          plural(allDates.length, 'заняття', 'заняття', 'занять') +
+          '), або оберіть потрібну дату, щоб додати тільки її *';
     }
 
     var cal = el.modalBody.querySelector('.cal');
