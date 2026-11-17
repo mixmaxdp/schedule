@@ -435,8 +435,9 @@
     dateSection.innerHTML = '<div class="modal__section-head"><h3>Дати занять</h3>' +
       (selectedDate ? '<button type="button" class="link link--reset" id="resetDate">увесь цикл</button>' : '') +
       '</div><div class="dates">' + allDates.map(function (date) {
-        var active = selectedDate === date ? ' is-active' : '';
-        return '<button type="button" class="date' + active + '" data-date="' + date + '">' +
+        var active = selectedDate === date;
+        return '<button type="button" class="date' + (active ? ' is-active' : '') +
+          '" data-date="' + date + '" aria-pressed="' + (active ? 'true' : 'false') + '">' +
           D.formatDate(date, { day: 'numeric', month: 'short' }) + '</button>';
       }).join('') + '</div>';
     holder.appendChild(dateSection);
@@ -461,26 +462,73 @@
 
   function paintModal() {
     if (!state.modal) return;
-    var lesson = state.modal.lesson;
-    var selected = state.modal.selectedDate;
-
     el.modalBody.innerHTML = '';
-    el.modalBody.appendChild(renderModalBody(lesson, selected));
+    el.modalBody.appendChild(renderModalBody(state.modal.lesson, state.modal.selectedDate));
+    bindDateActions();
+  }
 
+  function bindDateActions() {
     Array.prototype.forEach.call(el.modalBody.querySelectorAll('.date'), function (button) {
       button.addEventListener('click', function () {
+        if (!state.modal) return;
         var date = button.getAttribute('data-date');
         state.modal.selectedDate = state.modal.selectedDate === date ? null : date;
-        paintModal();
+        updateModalSelection();
       });
     });
 
     var reset = el.modalBody.querySelector('#resetDate');
     if (reset) {
       reset.addEventListener('click', function () {
+        if (!state.modal) return;
         state.modal.selectedDate = null;
-        paintModal();
+        updateModalSelection();
       });
+    }
+  }
+
+  /* Оновлює вибір дати на місці: кнопки дат не перестворюються, тому фокус
+     не «стрибає» на інший чип і зайвий outline не з'являється. */
+  function updateModalSelection() {
+    if (!state.modal) return;
+    var lesson = state.modal.lesson;
+    var selected = state.modal.selectedDate;
+    var allDates = datesFor(lesson);
+    var target = selected ? [selected] : allDates;
+
+    Array.prototype.forEach.call(el.modalBody.querySelectorAll('.date'), function (button) {
+      var active = button.getAttribute('data-date') === selected;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+
+    var hint = el.modalBody.querySelector('.modal__hint');
+    if (hint) {
+      hint.textContent = selected
+        ? 'Обрано одне заняття — кнопки нижче додадуть лише його *'
+        : 'Кнопки нижче додадуть увесь цикл (' + allDates.length + ' ' +
+          plural(allDates.length, 'заняття', 'заняття', 'занять') + ') *';
+    }
+
+    var cal = el.modalBody.querySelector('.cal');
+    if (cal) cal.parentNode.replaceChild(calendarButtons(lesson, target), cal);
+
+    var head = el.modalBody.querySelector('.modal__section-head');
+    var reset = head ? head.querySelector('#resetDate') : null;
+    if (selected && head && !reset) {
+      reset = document.createElement('button');
+      reset.type = 'button';
+      reset.className = 'link link--reset';
+      reset.id = 'resetDate';
+      reset.textContent = 'увесь цикл';
+      reset.addEventListener('click', function () {
+        if (!state.modal) return;
+        state.modal.selectedDate = null;
+        updateModalSelection();
+      });
+      head.appendChild(reset);
+    } else if (!selected && reset) {
+      reset.remove();
     }
   }
 

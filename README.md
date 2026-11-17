@@ -129,6 +129,10 @@ centralised in `assets/data.js` so they are easy to correct.
 - The hint above those buttons ends with `*`, and the fineprint below the date chips
   starts with `* Outlook-посилання додає найближче заняття…` — the asterisk pair marks
   the Outlook one-meeting limitation without repeating it inline.
+- Selecting a date chip updates the modal in place: only that chip gets the active
+  style, and the Google / Outlook / iCal buttons are rewired to the single meeting.
+  Re-rendering the chip list is avoided, so focus never jumps to another date and no
+  stray focus ring appears on mobile.
 - «ННІ УДХТУ» in the header links to <https://udhtu.edu.ua/>; the footer contains the
   source link and the author credit. It lives outside `#result`, so it is visible on
   the empty state too, before any specialty is selected.
