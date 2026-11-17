@@ -1223,6 +1223,11 @@ main {
   font-family: inherit;
 }
 
+.link--reset.is-placeholder {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .note {
   font-size: 13px;
   line-height: 1.45;

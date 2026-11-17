@@ -433,8 +433,12 @@
 
     var dateSection = document.createElement('div');
     dateSection.className = 'modal__dates';
+    /* Кнопка «увесь цикл» є в розмітці завжди (неактивна — прихована), щоб
+       рядок заголовка не змінював висоту й дати не стрибали при виборі. */
     dateSection.innerHTML = '<div class="modal__section-head"><h3>Дати занять</h3>' +
-      (selectedDate ? '<button type="button" class="link link--reset" id="resetDate">увесь цикл</button>' : '') +
+      '<button type="button" class="link link--reset' + (selectedDate ? '' : ' is-placeholder') +
+      '" id="resetDate"' + (selectedDate ? '' : ' disabled aria-hidden="true" tabindex="-1"') +
+      '>увесь цикл</button>' +
       '</div><div class="dates">' + allDates.map(function (date) {
         var active = selectedDate === date;
         return '<button type="button" class="date' + (active ? ' is-active' : '') +
@@ -515,22 +519,17 @@
     var cal = el.modalBody.querySelector('.cal');
     if (cal) cal.parentNode.replaceChild(calendarButtons(lesson, target), cal);
 
-    var head = el.modalBody.querySelector('.modal__section-head');
-    var reset = head ? head.querySelector('#resetDate') : null;
-    if (selected && head && !reset) {
-      reset = document.createElement('button');
-      reset.type = 'button';
-      reset.className = 'link link--reset';
-      reset.id = 'resetDate';
-      reset.textContent = 'увесь цикл';
-      reset.addEventListener('click', function () {
-        if (!state.modal) return;
-        state.modal.selectedDate = null;
-        updateModalSelection();
-      });
-      head.appendChild(reset);
-    } else if (!selected && reset) {
-      reset.remove();
+    var reset = el.modalBody.querySelector('#resetDate');
+    if (reset) {
+      reset.classList.toggle('is-placeholder', !selected);
+      reset.disabled = !selected;
+      if (selected) {
+        reset.removeAttribute('aria-hidden');
+        reset.removeAttribute('tabindex');
+      } else {
+        reset.setAttribute('aria-hidden', 'true');
+        reset.setAttribute('tabindex', '-1');
+      }
     }
   }
 
