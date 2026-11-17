@@ -150,3 +150,6 @@ vite.config.ts.timestamp-*
 
 # macOS
 .DS_Store
+
+# Air-alert CSV cache (see scripts/build-alerts.mjs)
+.cache/

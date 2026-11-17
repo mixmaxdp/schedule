@@ -167,6 +167,45 @@ Times are computed from the lesson's `start`/`end` plus a Kyiv DST helper in
 `assets/calendar.js` (`kyivOffset`), rather than from a timezone database; the `.ics` writer
 emits the matching `VTIMEZONE` rules.
 
+## Air alerts
+
+The site marks lessons that overlapped a real air-raid alert in Dnipro. This is a
+**historical** marker, not a live status: "there was an alert during this class", never
+"this class was cancelled".
+
+- **Source** — [`Vadimkin/ukrainian-air-raid-sirens-dataset`](https://github.com/Vadimkin/ukrainian-air-raid-sirens-dataset),
+  `datasets/volunteer_data_uk.csv` (volunteer / [eTryvoga](https://app.etryvoga.com), MIT).
+  The official CSV in the same repo stopped updating on 07.09.2026 and is not used.
+- **Scope** — the whole **Дніпропетровська область** (oblast level, which is the granularity
+  the official siren system uses since December 2025), filtered to the semester window
+  `05.10–27.12.2026` and clipped to `07:00–18:00` Kyiv time.
+- **Semantics** — intervals are merged when the gap is ≤ 10 min and dropped when shorter
+  than 1 min. A card shows a marker only when the alert actually overlapped that lesson's
+  `start`–`end`; the modal sums the whole cycle and keeps a constant block regardless of
+  the selected date, so nothing jumps when picking a chip.
+- **Honesty** — every class is online (Zoom/Classroom), so an alert does not imply a
+  postponement. The modal says so and credits `alerts.in.ua / eTryvoga`.
+- **Coverage** — the dataset is updated once a day, so the current day (and any day after
+  the last source row) may be incomplete. Absence of a marker means "no recorded alert",
+  not "no alert".
+
+Regenerate the data after the source updates:
+
+```bash
+node scripts/build-alerts.mjs            # download the CSV into .cache/ and rewrite assets/alerts.js
+node scripts/build-alerts.mjs --refresh  # ignore the cache and re-download
+node --test scripts/build-alerts.test.mjs
+```
+
+`.github/workflows/alerts.yml` runs the same script daily at 04:20 UTC (plus manual
+`workflow_dispatch`) and commits `assets/alerts.js` only when it changed. `.cache/` is
+git-ignored, so the 11 MB CSV never lands in the repository.
+
+Live status ("alert right now") is intentionally out of scope for this release. It needs an
+`alerts.in.ua` API token and a server-side hop, because no public alert API sends CORS
+headers. The planned follow-up is either a GitHub Action snapshot on a separate branch or a
+Cloudflare Worker proxy.
+
 ## Files
 
 ```
@@ -177,16 +216,21 @@ Schedule/
 │   ├── logo-udhtu.png    УДХТУ seal, white background keyed out for the header chip
 │   ├── logo-udunt.png    УДУНТ seal, trimmed and scaled for the header chip
 │   ├── data.js           SEMESTER, SLOTS, GROUPS, LESSONS, Zoom/Classroom links
+│   ├── alerts.js         generated air-alert history (do not edit by hand)
 │   ├── dates.js          occurrence generation, parity, Ukrainian date formatting
 │   ├── calendar.js       Google/Outlook URLs, .ics builder, Kyiv DST handling
 │   └── app.js            selection state, grid, agenda, modal, hash routing
+├── scripts/
+│   ├── build-alerts.mjs       CSV → assets/alerts.js generator
+│   └── build-alerts.test.mjs  Node tests for parsing, merging, clipping, splitting
 ├── source/
 │   └── Розклад_занять_1_семестр_2026_2027_УДХТУ.pdf   original signed timetable
+├── .github/workflows/alerts.yml   daily air-alert data refresh
 └── README.md
 ```
 
 `assets/data.js` is the **single source of truth** for the schedule. Everything else is
-presentation and date arithmetic.
+presentation and date arithmetic; `assets/alerts.js` is generated from an external dataset.
 
 ## Updating the schedule
 
@@ -245,3 +289,9 @@ presentation and date arithmetic.
 - The `.ics` builder is validated with `ical.js`: every cycle is one series with the exact
   `COUNT`, expansions reproduce the same dates, local times stay fixed across the DST
   switch, and every `VEVENT` has both `DESCRIPTION` and `X-ALT-DESC`.
+- Air alerts: `node --test scripts/build-alerts.test.mjs` covers CSV parsing, Kyiv wall-clock
+  conversion, day splitting across midnight, gap merging, `07:00–18:00` clipping, sub-minute
+  rejection, other oblasts and out-of-semester dates. A headless-browser pass checks markers
+  on week 6 (5 cards, method lecture `1 год 55 хв`), the cycle summary `6 із 7 · 4 год 29 хв`,
+  absence of markers on a week without data, calendar buttons staying above the fold,
+  zero layout shift when picking a date, dark mode and 390 px width.

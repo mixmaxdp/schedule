@@ -5,6 +5,7 @@
   var S = window.SCHEDULE;
   var D = window.ScheduleDates;
   var C = window.ScheduleCalendar;
+  var ALERTS = window.ALERTS || { days: {} };
 
   var TYPE_META = {
     lecture: { label: 'Лекція', cls: 'is-lecture' },
@@ -122,6 +123,53 @@
     return state.dates.get(lesson.id);
   }
 
+  /* ---------- повітряні тривоги ---------- */
+
+  function minutesOfTime(value) {
+    var parts = String(value).split(':');
+    return Number(parts[0]) * 60 + Number(parts[1]);
+  }
+
+  function formatClock(minutes) {
+    return pad2(Math.floor(minutes / 60)) + ':' + pad2(minutes % 60);
+  }
+
+  function formatDuration(minutes) {
+    if (minutes < 60) return minutes + ' хв';
+    var hours = Math.floor(minutes / 60);
+    var rest = minutes % 60;
+    return hours + ' год' + (rest ? ' ' + rest + ' хв' : '');
+  }
+
+  /* Інтервали тривоги, які перетнулися з конкретною парою. */
+  function lessonAlerts(lesson, date) {
+    if (!date || !ALERTS.days) return [];
+    var spans = ALERTS.days[date] || [];
+    var from = minutesOfTime(lesson.start);
+    var to = minutesOfTime(lesson.end);
+    var result = [];
+
+    spans.forEach(function (span) {
+      var start = Math.max(from, span[0]);
+      var end = Math.min(to, span[1]);
+      if (end > start) result.push({ start: start, end: end, minutes: end - start });
+    });
+
+    return result;
+  }
+
+  function lessonAlertMinutes(lesson, date) {
+    return lessonAlerts(lesson, date).reduce(function (sum, span) {
+      return sum + span.minutes;
+    }, 0);
+  }
+
+  function alertIcon() {
+    return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+      '<path d="M12 3a6 6 0 0 0-6 6v4l-2 3h16l-2-3V9a6 6 0 0 0-6-6Z"/>' +
+      '<path d="M10 19a2 2 0 0 0 4 0"/></svg>';
+  }
+
   /* «Веліченко Олександр Борисович» → «Веліченко О. Б.» */
   function shortName(fullName) {
     var parts = fullName.split(' ');
@@ -179,15 +227,18 @@
       meta.short + '</span>';
   }
 
-  function makeCard(lesson, mode) {
+  function makeCard(lesson, mode, date) {
     var card = document.createElement('article');
     card.className = 'card ' + (TYPE_META[lesson.type] || TYPE_META.lecture).cls;
     card.tabIndex = 0;
-    card.setAttribute('role', 'button');
-    card.setAttribute('aria-label', lesson.subject + ', ' + lesson.start + '–' + lesson.end);
 
     var dates = datesFor(lesson);
     var compact = mode === 'grid';
+    var alertMinutes = lessonAlertMinutes(lesson, date);
+
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', lesson.subject + ', ' + lesson.start + '–' + lesson.end +
+      (alertMinutes ? ', тривога під час заняття, ' + formatDuration(alertMinutes) : ''));
 
     card.innerHTML = [
       '<header class="card__head">',
@@ -198,6 +249,10 @@
       '<h3 class="card__title">' + lesson.subject + '</h3>',
       '<p class="card__subtitle">' + lesson.subtitle + '</p>',
       '<p class="card__teacher">' + shortName(lesson.teacher) + '</p>',
+      alertMinutes
+        ? '<p class="card__alert">' + alertIcon() +
+          'Тривога під час заняття · ' + formatDuration(alertMinutes) + '</p>'
+        : '',
       '<footer class="card__foot">',
       '<span class="card__meta">' + dates.length + ' ' +
         plural(dates.length, 'заняття', 'заняття', 'занять') + '</span>',
@@ -264,7 +319,7 @@
     });
 
     lessons.forEach(function (lesson) {
-      var card = makeCard(lesson, 'grid');
+      var card = makeCard(lesson, 'grid', week && week.days[lesson.day]);
       card.style.gridColumn = String(lesson.day + 1);
       card.style.gridRow = (positionOf[lesson.slot] + 2) + ' / span ' + (lesson.span || 1);
       grid.appendChild(card);
@@ -307,7 +362,7 @@
         section.appendChild(empty);
       } else {
         list.forEach(function (lesson) {
-          section.appendChild(makeCard(lesson, 'list'));
+          section.appendChild(makeCard(lesson, 'list', week && week.days[lesson.day]));
         });
       }
 
@@ -387,6 +442,44 @@
     return wrap;
   }
 
+  function alertBlockHtml(lesson) {
+    var dates = datesFor(lesson);
+    var rows = [];
+    var total = 0;
+
+    dates.forEach(function (date) {
+      var minutes = lessonAlertMinutes(lesson, date);
+      if (!minutes) return;
+      rows.push({ date: date, minutes: minutes, spans: lessonAlerts(lesson, date) });
+      total += minutes;
+    });
+
+    if (!rows.length) return '';
+
+    var updated = ALERTS.updated
+      ? D.formatDate(ALERTS.updated.slice(0, 10), { day: 'numeric', month: 'long' })
+      : '';
+
+    return '<section class="modal__alerts" aria-label="Повітряна тривога">' +
+      '<h3>Повітряна тривога</h3>' +
+      '<p class="modal__alerts-sum">Тривога під час <strong>' + rows.length + ' із ' +
+        dates.length + '</strong> занять · разом ' + formatDuration(total) + '</p>' +
+      '<ul class="modal__alerts-list">' +
+        rows.map(function (row) {
+          var intervals = row.spans.map(function (span) {
+            return formatClock(span.start) + '–' + formatClock(span.end);
+          }).join(', ');
+          return '<li title="' + intervals + '">' +
+            D.formatDate(row.date, { day: 'numeric', month: 'short' }) +
+            ' · ' + formatDuration(row.minutes) + '</li>';
+        }).join('') +
+      '</ul>' +
+      '<p class="modal__alerts-note">Дані: alerts.in.ua / eTryvoga, рівень області' +
+        (updated ? ' · оновлено ' + updated : '') +
+        '. Тривога не означає перенесення — заняття проходять онлайн.</p>' +
+      '</section>';
+  }
+
   function renderModalBody(lesson, selectedDate) {
     var allDates = datesFor(lesson);
     var dates = selectedDate ? [selectedDate] : allDates;
@@ -430,6 +523,15 @@
     var holder = document.createElement('div');
     holder.innerHTML = parts.join('');
     holder.appendChild(calendarButtons(lesson, target));
+
+    /* Блок тривог стоїть після кнопок календаря, щоб вони лишалися видимими
+       без прокрутки; вміст не залежить від обраної дати, тому не «стрибає». */
+    var alertHtml = alertBlockHtml(lesson);
+    if (alertHtml) {
+      var alertWrap = document.createElement('div');
+      alertWrap.innerHTML = alertHtml;
+      holder.appendChild(alertWrap.firstChild);
+    }
 
     var dateSection = document.createElement('div');
     dateSection.className = 'modal__dates';
