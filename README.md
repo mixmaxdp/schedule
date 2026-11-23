@@ -86,7 +86,8 @@ centralised in `assets/data.js` so they are easy to correct.
 1. **Two-hour classes are one pair.** A cell that says `2 години` is rendered as a single
    80-minute pair. For example, Monday `Методологія (практичні, 2 години)` is `11:00–12:20`.
 2. **The four-hour lecture is two pairs.** Tuesday `Методологія (лекції 4 години)` is
-   `11:00–14:20`, i.e. `11:00–12:20` and `13:00–14:20` back to back.
+   `11:00–14:20`, i.e. `11:00–12:20` and `13:00–14:20` back to back. The one-off
+   consultation on 24.11 reuses the same slot and length.
 3. **Parity weeks.** The semester starts on Monday **05.10.2026** and that week is
    **знаменник** (denominator). Weeks alternate: знаменник, чисельник, знаменник, …
    Only the IT lab is parity-bound (`знаменник`), so its dates are
@@ -94,7 +95,8 @@ centralised in `assets/data.js` so they are easy to correct.
 4. **Date ranges are inclusive and weekday-aligned.** Each lesson carries `from`/`to`
    dates; occurrences are generated on the lesson's weekday inside that range, filtered by
    parity. This is why the Methodology lecture runs through 22.11 (including the week
-   16.11–22.11) and the Methodology practical starts on 23.11.
+   16.11–22.11), the Methodology practical starts on 30.11, and the week 23.11–29.11 has
+   a one-off consultation on Tuesday 24.11 instead of the Monday practical.
 5. **Н1 course split** as described above. The source table has one `Н1` column covering
    both cohorts, so the split follows the parenthetical notes in the header rather than a
    separate column.
@@ -118,9 +120,11 @@ centralised in `assets/data.js` so they are easy to correct.
 - Weekday columns and mobile agenda headings show the date next to the day name
   (`Понеділок 02.11`), so the current week is readable without opening the modal.
 - Grid cards show the full class type (`Лекція`, `Практичні`, `Семінар`,
-  `Лабораторні`) on one line, and a short cadence badge in the footer
-  (`щотиж.`, `чис.`, `знам.`) with the full word in its tooltip. The agenda and
-  modal keep the full badges (`Щотижня`, `Чисельник`, `Знаменник`).
+  `Лабораторні`, `Консультація`) on one line, and a short cadence badge in the footer
+  (`щотиж.`, `чис.`, `знам.`) with the full word in its tooltip. A one-off lesson
+  (for example the 24.11 consultation) shows «однораз.» / «Одноразово» instead of a
+  weekly cadence. The agenda and modal keep the full badges (`Щотижня`, `Чисельник`,
+  `Знаменник`).
 - Choosing a chip scrolls to the result with an offset equal to the sticky header
   height, so the specialty summary cards stay fully visible instead of hiding under
   the header. Opening a link with `#CODE` deliberately does not scroll.

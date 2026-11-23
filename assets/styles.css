@@ -27,6 +27,7 @@
   --practical: #0d7a6f;
   --seminar: #7138d4;
   --lab: #b45309;
+  --consultation: #0e7490;
   --alert: #b42318;
 }
 
@@ -52,6 +53,7 @@
     --practical: #34c3b0;
     --seminar: #b08cff;
     --lab: #f0a45c;
+    --consultation: #67e8f9;
     --alert: #ff9a8f;
   }
 }
@@ -774,6 +776,7 @@ main {
 .card.is-practical { border-left-color: var(--practical); }
 .card.is-seminar { border-left-color: var(--seminar); }
 .card.is-lab { border-left-color: var(--lab); }
+.card.is-consultation { border-left-color: var(--consultation); }
 
 .card__head {
   display: flex;
@@ -900,6 +903,8 @@ main {
 .badge.is-practical { color: var(--practical); }
 .badge.is-seminar { color: var(--seminar); }
 .badge.is-lab { color: var(--lab); }
+.badge.is-consultation { color: var(--consultation); }
+.badge.is-once { color: var(--muted); }
 
 .badge--ghost {
   background: transparent;

@@ -80,6 +80,8 @@
       links: [{ label: 'Zoom', url: ZOOM.savchenko }]
     },
     {
+      /* 23.11 практичного немає: цього тижня замість нього консультація
+         у вівторок (method-consultation), тому цикл починається з 30.11. */
       id: 'method-practice',
       day: 1,
       slot: 2,
@@ -93,10 +95,31 @@
       teacher: 'Веліченко Олександр Борисович',
       teacherInfo: 'д. х. н., професор, завідувач кафедри фізичної хімії ННІ УДХТУ',
       groups: ['F3', 'C1', 'G1', 'G8', 'G11', 'E3', 'G3'],
-      from: '2026-11-23',
+      from: '2026-11-30',
       to: '2026-12-27',
       parity: WEEK_ALL,
       format: 'Онлайн · Zoom',
+      links: [{ label: 'Zoom', url: ZOOM.velichenko }]
+    },
+    {
+      id: 'method-consultation',
+      day: 2,
+      slot: 2,
+      span: 2,
+      start: '11:00',
+      end: '14:20',
+      subject: 'Методологія і планування наукових досліджень',
+      subtitle: 'Консультація · 4 години (2 пари)',
+      type: 'consultation',
+      hours: 4,
+      teacher: 'Веліченко Олександр Борисович',
+      teacherInfo: 'д. х. н., професор, завідувач кафедри фізичної хімії ННІ УДХТУ',
+      groups: ['F3', 'C1', 'G1', 'G8', 'G11', 'E3', 'G3'],
+      from: '2026-11-24',
+      to: '2026-11-24',
+      parity: WEEK_ALL,
+      format: 'Онлайн · Zoom',
+      note: 'Консультація замість практичного заняття 23.11.2026. Час як у лекції: 11:00–12:20 і 13:00–14:20.',
       links: [{ label: 'Zoom', url: ZOOM.velichenko }]
     },
     {

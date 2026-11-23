@@ -104,6 +104,7 @@
 
   function formatRange(lesson) {
     var from = formatDate(lesson.from, { day: 'numeric', month: 'short' });
+    if (lesson.from === lesson.to) return from;
     var to = formatDate(lesson.to, { day: 'numeric', month: 'short' });
     return from + ' — ' + to;
   }

@@ -11,13 +11,15 @@
     lecture: { label: 'Лекція', cls: 'is-lecture' },
     practical: { label: 'Практичні', cls: 'is-practical' },
     seminar: { label: 'Семінар', cls: 'is-seminar' },
-    lab: { label: 'Лабораторні', cls: 'is-lab' }
+    lab: { label: 'Лабораторні', cls: 'is-lab' },
+    consultation: { label: 'Консультація', cls: 'is-consultation' }
   };
 
   var CADENCE = {
     all: { label: 'Щотижня', short: 'щотиж.', cls: 'is-weekly' },
     numerator: { label: 'Чисельник', short: 'чис.', cls: 'is-odd' },
-    denominator: { label: 'Знаменник', short: 'знам.', cls: 'is-even' }
+    denominator: { label: 'Знаменник', short: 'знам.', cls: 'is-even' },
+    once: { label: 'Одноразово', short: 'однораз.', cls: 'is-once' }
   };
 
   var CYRILLIC_HOMOGLYPHS = {
@@ -217,8 +219,15 @@
     return '<span class="badge ' + meta.cls + '">' + meta.label + '</span>';
   }
 
+  function cadenceFor(lesson) {
+    /* Одноразова подія (наприклад, консультація замість пари) не «щотижня». */
+    return datesFor(lesson).length === 1
+      ? CADENCE.once
+      : (CADENCE[lesson.parity] || CADENCE.all);
+  }
+
   function cadenceBadge(lesson, compact) {
-    var meta = CADENCE[lesson.parity] || CADENCE.all;
+    var meta = cadenceFor(lesson);
     if (!compact) {
       return '<span class="badge badge--ghost ' + meta.cls + '">' + meta.label + '</span>';
     }
@@ -494,12 +503,14 @@
     parts.push('<dl class="detail">');
     parts.push('<div><dt>Коли</dt><dd>' + D.DAY_NAMES[lesson.day] + ', ' + lesson.start + '–' + lesson.end + '</dd></div>');
     parts.push('<div><dt>Викладач</dt><dd><strong>' + lesson.teacher + '</strong><br>' + lesson.teacherInfo + '</dd></div>');
-    var cycleSpan = allDates.length
-      ? D.formatDate(allDates[0], { day: 'numeric', month: 'short' }) + ' — ' +
-        D.formatDate(allDates[allDates.length - 1], { day: 'numeric', month: 'short' })
-      : D.formatRange(lesson);
+    var cycleSpan = allDates.length === 1
+      ? D.formatDate(allDates[0], { day: 'numeric', month: 'short' })
+      : allDates.length
+        ? D.formatDate(allDates[0], { day: 'numeric', month: 'short' }) + ' — ' +
+          D.formatDate(allDates[allDates.length - 1], { day: 'numeric', month: 'short' })
+        : D.formatRange(lesson);
     parts.push('<div><dt>Період</dt><dd>' + cycleSpan + ' · ' +
-      (CADENCE[lesson.parity] || CADENCE.all).label.toLowerCase() + '</dd></div>');
+      cadenceFor(lesson).label.toLowerCase() + '</dd></div>');
     parts.push('<div><dt>Формат</dt><dd>' + lesson.format + '</dd></div>');
     parts.push('</dl>');
 
