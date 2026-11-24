@@ -8,8 +8,8 @@ window.ALERTS = {
   "source": "Vadimkin/ukrainian-air-raid-sirens-dataset (volunteer / eTryvoga)",
   "sourceUrl": "https://raw.githubusercontent.com/Vadimkin/ukrainian-air-raid-sirens-dataset/main/datasets/volunteer_data_uk.csv",
   "license": "MIT",
-  "updated": "2026-11-23T06:29:42.000Z",
-  "through": "2026-11-23T06:29:42.000Z",
+  "updated": "2026-11-24T08:51:27.000Z",
+  "through": "2026-11-24T08:51:27.000Z",
   "window": [
     "07:00",
     "18:00"
@@ -1961,6 +1961,40 @@ window.ALERTS = {
       [
         501,
         510
+      ],
+      [
+        547,
+        569
+      ],
+      [
+        786,
+        791
+      ],
+      [
+        870,
+        892
+      ],
+      [
+        990,
+        1001
+      ],
+      [
+        1020,
+        1045
+      ],
+      [
+        1063,
+        1080
+      ]
+    ],
+    "2026-11-24": [
+      [
+        546,
+        564
+      ],
+      [
+        625,
+        640
       ]
     ]
   }
